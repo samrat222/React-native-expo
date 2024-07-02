@@ -1,0 +1,58 @@
+export const APP_ROLES = [
+  {
+    roleId: 1,
+    title: 'RS_SuperAdmin',
+    context: 'sa',
+    defaultURL: '/SaDashboard',
+    titleBeautify: 'Super Admin',
+  },
+  {
+    roleId: 2,
+    title: 'RS_SubAdmin',
+    context: 'rsa',
+    defaultURL: '/rsa-dashboard',
+    titleBeautify: 'Sub Admin',
+  },
+  {
+    roleId: 3,
+    title: 'Agency_SuperAdmin',
+    context: 'basa',
+    defaultURL: '/basa-dashboard',
+    titleBeautify: 'Agency Admin',
+  },
+  {
+    roleId: 4,
+    title: 'Agency_Broker',
+    context: 'ab',
+    defaultURL: '/ab-dashboard',
+    titleBeautify: 'Agency Broker',
+  },
+  {
+    roleId: 5,
+    title: 'Individual_Broker',
+    context: 'ib',
+    defaultURL: '/ib-dashboard',
+    titleBeautify: 'Individual Broker',
+  },
+  {
+    roleId: 6,
+    title: 'CreditProvider_SuperAdmin',
+    context: 'cpsa',
+    defaultURL: '/cpsa-dashboard',
+    titleBeautify: 'Credit Provider Admin',
+  },
+  {
+    roleId: 7,
+    title: 'CreditProvider_User',
+    context: 'cpu',
+    defaultURL: '/cpu-dashboard',
+    titleBeautify: 'Credit Provider',
+  },
+  {
+    roleId: 8,
+    title: 'Tenant',
+    context: 'te',
+    defaultURL: '/te-dashboard',
+    titleBeautify: 'Tenant',
+  },
+];
