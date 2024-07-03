@@ -6,9 +6,10 @@ import { showMessage } from "react-native-flash-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
 import { ScrollView } from "react-native";
-// import DatePicker from "react-native-date-picker";
 import { AuthContext } from "@/app/context/AuthContext";
-import DatePicker from "react-native-date-picker";
+import { useNavigation } from "@react-navigation/native";
+
+// import DateTimePicker from "@react-native-community/datetimepicker";
 
 const CreateAgency = () => {
   // const [loading, setLoading] = useState(false);
@@ -18,9 +19,14 @@ const CreateAgency = () => {
   const [open, setOpen] = useState(false);
   const [allLocations, setAllLocations] = useState(null);
   const [regex, setRegex] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
+  const [show, setShow] = useState(false);
+  const [allAgencySubscriptionTypes, setAllAgencySubscriptionTypes] =
+    useState(null);
   // console.log(allLocations);
 
   const { user } = useContext(AuthContext);
+  const { navigate } = useNavigation();
 
   const StepOneSchema = Yup.object().shape({
     agencyname: Yup.string().required("Agency Name is required!"),
@@ -88,6 +94,30 @@ const CreateAgency = () => {
     }
   };
 
+  const getInstallmentTypes = async () => {
+    // console.log("Hello getInstallmentTypes");
+    try {
+      const resp = await fetch(
+        "https://rs-be.octopi-labs.com/api/1.0.0/ref/agencySubscriptionTypes",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-JWT-Assertion": user,
+          },
+        }
+      );
+
+      if (resp.ok) {
+        const response = await resp.json();
+        console.log("response :", response);
+        setAllAgencySubscriptionTypes(response.data);
+      }
+    } catch (e) {
+      console.log("Error", e);
+    }
+  };
+
   const initial = {
     agencyname: "",
     firstname: "",
@@ -108,6 +138,7 @@ const CreateAgency = () => {
 
   const handleCreateAgency = async (value) => {
     try {
+      // console.log("hiiiii");
       const request = {
         agencyName: value.agencyname,
         location: value.city,
@@ -136,34 +167,28 @@ const CreateAgency = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-JWT-Assertion": token,
+            "X-JWT-Assertion": user,
           },
           body: JSON.stringify(request),
         }
       );
 
       if (resp.ok) {
-        showMessage({
-          message: "Agency created successfully!",
-          type: "success",
-        }).then((res) => {
-          if (res.isConfirmed) {
-            navigation.navigate("SaAgencyList");
-          }
-        });
+        console.log("Agency Created successfully");
+        navigate("SaDashboard");
       }
     } catch (e) {
       showMessage({
         message: "Something went wrong!",
         type: "danger",
       });
-      console.log("Error");
+      console.log(e, "Error");
     }
   };
 
   const getCities = (cityId) => {
     const e = allLocations.find((obj) => obj.code === cityId);
-    console.log(e);
+    // console.log(e);
     return e ? e.subLocations : null;
   };
 
@@ -173,7 +198,18 @@ const CreateAgency = () => {
     return city.regularExp;
   };
 
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    setShow(false);
+    setStartDate(currentDate);
+  };
+
+  const showDatePicker = () => {
+    setShow(true);
+  };
+
   useEffect(() => {
+    getInstallmentTypes();
     getLocations();
   }, []);
 
@@ -378,19 +414,18 @@ const CreateAgency = () => {
                   onChangeText={(text) => setFieldValue("startDate", text)}
                   value={values.startDate}
                 />
-                <Button title="Open" onPress={() => setOpen(true)} />
-                <DatePicker
-                  modal
-                  open={open}
-                  date={date}
-                  onConfirm={(date) => {
-                    setOpen(false);
-                    setDate(date);
-                  }}
-                  onCancel={() => {
-                    setOpen(false);
-                  }}
-                />
+                {/* <Text onPress={showDatePicker} style={styles.dateText}>
+                  {startDate.toDateString()}
+                </Text>
+                {show && (
+                  <DateTimePicker
+                    value={startDate}
+                    mode="date"
+                    display="default"
+                    onChange={onChange}
+                  />
+                )} */}
+
                 {/* <DatePicker date={date} onDateChange={setDate} /> */}
                 {errors.startDate && touched.startDate && (
                   <Text style={styles.errorText}>{errors.startDate}</Text>
@@ -425,6 +460,20 @@ const CreateAgency = () => {
                 {errors.incentive && touched.incentive && (
                   <Text style={styles.errorText}>{errors.incentive}</Text>
                 )}
+
+                <Text style={styles.label}>Subscription Frequency</Text>
+                <Picker
+                  selectedValue={values.subscriptionFrequency}
+                  onValueChange={(value) => {
+                    // console.log("location", value);
+                    setFieldValue("subscriptionFrequency", value);
+                  }}
+                  style={styles.picker}
+                >
+                  {allAgencySubscriptionTypes.map((s, i) => (
+                    <Picker.Item label={s.name} value={s.name} key={i} />
+                  ))}
+                </Picker>
 
                 <Text style={styles.label}>Subscription Amount in AED</Text>
                 <TextInput
